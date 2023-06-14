@@ -15,10 +15,9 @@ jQuery(function($) {
                 country: country
             },
             success: function(response) {
-                $('.d-grid').remove();
+                $('#first-grid').remove();
                 $('#response').html(response);
             }
         });
     });
 });
-
