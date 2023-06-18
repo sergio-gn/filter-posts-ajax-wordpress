@@ -8,7 +8,7 @@ function filter_posts_ajax() {
     $args = array(
         'post_type' => 'example_post',
         'post_status' => 'publish',
-        'posts_per_page' => 10,
+        'posts_per_page' => 50,
         'tax_query' => array(
             array(
                 'taxonomy' => 'custom_post_tag',
@@ -22,8 +22,9 @@ function filter_posts_ajax() {
 
     ob_start();
 
-    if ( $custom_query->have_posts() ): ?>
-            <div id="first-grid" class="d-grid grid-3-col gap-1">
+    // Check if there are any posts
+        if ( $custom_query->have_posts() ): ?>
+            <div id="first-grid" class="d-grid grid-3-col gap-3-1 flex-1">
                 <?php while ( $custom_query->have_posts() ): $custom_query->the_post(); ?>
                     <div class="card bg-white border-r-1 p-1">
                         <div class="d-flex align-items-center gap-1">
@@ -31,27 +32,27 @@ function filter_posts_ajax() {
                             $featured_img_url = get_the_post_thumbnail_url(get_the_ID(), 'full');
                             $alt_text = get_post_meta(get_post_thumbnail_id(), '_wp_attachment_image_alt', true);
                             ?>
-                            <img class="example" loading="lazy" src="<?php echo $featured_img_url; ?>" alt="<?php echo $alt_text; ?>" />
-                            <div>
-                                <h2><?php the_title(); ?></h2>
-                                <?php
-                                $tags = get_the_terms(get_the_ID(), 'custom_post_tag'); // Replace 'custom_post_tag' with your custom taxonomy slug
-                                if ($tags && !is_wp_error($tags)) {
-                                    foreach ($tags as $tag) {
-                                        echo '<a href="' . get_term_link($tag) . '">' . $tag->name . '</a>';
+                            <img class="example" loading="lazy" src="<?php echo $featured_img_url; ?>" alt="<?php echo $alt_text; ?>"/>
+                            <div class="max-width-min">
+                                <h2><?php the_title();?></h2>
+                                <p>
+                                    <?php
+                                    $tags = get_the_terms(get_the_ID(), 'custom_post_tag');
+                                    if ($tags && !is_wp_error($tags)) {
+                                        foreach ($tags as $tag) {
+                                            echo  $tag->name ;
+                                        }
                                     }
-                                }
-                                ?>
+                                    ?>
+                                </p>
                             </div>
                         </div>
                         <div class="py-2"><?php the_content(); ?></div>
                     </div>
                 <?php endwhile; ?>
-
                 <?php wp_reset_postdata(); ?>
-
             </div>
-    <?php endif;
+        <?php endif; 
 
     $response = ob_get_clean();
     echo $response;
