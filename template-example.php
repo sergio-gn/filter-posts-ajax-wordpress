@@ -1,5 +1,5 @@
 <?php
-/* Template Name: example Page */
+/* Template Name: examples Page */
 get_header('example');
 
 get_template_part( 'template-parts/menu', '1' );
@@ -23,7 +23,7 @@ get_template_part( 'template-parts/menu', '1' );
             
             // Check if there are any posts
             if ( $custom_query->have_posts() ): ?>
-                <div class="flex-d-column flex-1">
+                <div id="example_no-query" class="flex-d-column flex-1 col-xl-10">
                     <div id="first-grid" class="d-grid grid-3-col gap-3-1 flex-1">
                     <?php while ( $custom_query->have_posts() ): $custom_query->the_post(); ?>
                         <div class="card bg-white border-r-1 p-1">
@@ -34,7 +34,9 @@ get_template_part( 'template-parts/menu', '1' );
                                 ?>
                                 <img class="example" loading="lazy" src="<?php echo $featured_img_url; ?>" alt="<?php echo $alt_text; ?>"/>
                                 <div class="max-width-min">
-                                    <h2><?php the_title();?></h2>
+                                    <a href="<?php echo get_permalink(); ?>">
+                                        <h2><?php the_title();?></h2>
+                                    </a>
                                     <p>
                                         <?php
                                         $tags = get_the_terms(get_the_ID(), 'custom_post_tag');
@@ -47,7 +49,7 @@ get_template_part( 'template-parts/menu', '1' );
                                     </p>
                                 </div>
                             </div>
-                            <div class="py-2"><?php the_content(); ?></div>
+                            <div class="py-2"><?php the_excerpt(); ?></div>
                         </div>
                     <?php endwhile; ?>
                     <?php wp_reset_postdata(); ?>
@@ -70,7 +72,6 @@ get_template_part( 'template-parts/menu', '1' );
                 }
                 endif; ?>
                 </div>
-    
             <?php
             /******************************************************* FLAGS ********************************************************/
             // Get all countries
@@ -78,74 +79,39 @@ get_template_part( 'template-parts/menu', '1' );
                 'taxonomy'   => 'custom_post_tag',
                 'hide_empty' => false,
             ));
-        
-            // Construct the path to the JSON file
-            $jsonFile = 'https://example.com/wp-content/themes/example/assets/json/flags.json';
-            
-            // Load the JSON data from the file
-            $jsonData = file_get_contents($jsonFile);
-            
-            // Decode the JSON data
-            $data = json_decode($jsonData, true);
             
             /******************************************************* FLAGS ********************************************************/
             ?>
-    
+            
             <?php if ($countries) :?>
                 <div id="response" class="d-contents"></div>
-                <form id="filter">
-                    <?php foreach ($countries as $country):
-                        $countryName = $country->name;
-                        $countryClass = '';
-            
-                        // Find the country in the JSON data and retrieve the code
-                        foreach ($data['countries'] as $countryData) {
-                            if ($countryData['name'] === $countryName) {
-                                $countryClass = strtolower($countryData['code']);
-                                break;
-                            }
-                        }
-                    ?>
-                        <div class="d-flex">
-                            <input type="checkbox" name="country[]" value="<?php echo $country->term_id; ?>" />
-                            <span class="flag-icon fi-<?php echo $countryClass; ?>"></span>
-                            <p><?php echo $countryName; ?></p>
+                <div>
+                    <form id="filter" class="filter">
+                        <button class="all-btn" type="button" id="select-all-button">All Countries</button>
+                        <div class="countries">
+                            <?php foreach ($countries as $country):
+                                $countryName = $country->name;
+                                $countryClass = strtolower(str_replace(' ', '-', $countryName)); // Convert spaces to hyphens
+                                
+                                ?>
+                                <div class="d-flex">
+                                    <input class="checkbox" type="checkbox" name="country[]" value="<?php echo $country->term_id; ?>" />
+                                    <span class="flag-icon <?php echo $countryClass; ?>"></span>
+                                    <p><?php echo $countryName; ?></p>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
                         
-                    <?php endforeach; ?>
-                    
-                    <button type="submit">Filter</button>
-                </form>
+                        <button class="filter-btn" type="submit">Filter</button>
+                    </form>
+                </div>
             <?php endif; ?>
-    
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script>
-        jQuery(function($) {
-            $('#filter').on('submit', function(e) {
-                e.preventDefault();
-    
-                var country = [];
-                $('input[name="country[]"]:checked').each(function() {
-                    country.push(this.value);
-                });
-    
-                $.ajax({
-                    url: '<?php echo admin_url("admin-ajax.php"); ?>',
-                    type: 'POST',
-                    data: {
-                        action: 'filter_posts',
-                        country: country
-                    },
-                    success: function(response) {
-                        $('#first-grid').remove();
-                        $('#response').html(response);
-                        $('.pagination').remove(); // Remove pagination when filtering results
-                    }
-                });
-            });
-        });
+      var ajaxUrl = '<?php echo admin_url("admin-ajax.php"); ?>';
     </script>
+    <script src="./filter.js"></script>
 </body>
 <?php get_footer(); ?>
